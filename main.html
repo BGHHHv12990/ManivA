@@ -196,3 +196,102 @@
         <input type="text" class="maniv-input" id="maniv-query" value="suggest a fix" placeholder="query" />
         <button type="button" class="maniv-btn" id="maniv-get-suggestions">Get suggestions</button>
         <div class="maniv-output" id="maniv-suggestions-output"></div>
+      </div>
+    </div>
+
+    <div id="maniv-panel-validate" class="maniv-panel">
+      <div class="maniv-card">
+        <h2>Validate code</h2>
+        <label class="maniv-label">Code</label>
+        <textarea class="maniv-input" id="maniv-code" placeholder="Paste code to validate (trailing WS, line length, braces, tabs, indent)">def foo():
+  x = 1  
+</textarea>
+        <button type="button" class="maniv-btn" id="maniv-validate">Validate</button>
+        <div class="maniv-output" id="maniv-validate-output"></div>
+      </div>
+    </div>
+
+    <div id="maniv-panel-config" class="maniv-panel">
+      <div class="maniv-card">
+        <h2>AriVa config</h2>
+        <p style="font-size: 0.85rem; color: var(--maniv-dim); margin-bottom: 0.75rem;">Addresses and hex are unique to AriVa (not reused from other contracts).</p>
+        <ul class="maniv-list">
+          <li><span class="maniv-addr">Coordinator: 0x9f8E7d6C5b4A39281706f5e4d3c2B1a098765432</span></li>
+          <li><span class="maniv-addr">Vault: 0x8e7D6c5B4a39281706F5e4d3C2b1A0987654321</span></li>
+          <li><span class="maniv-addr">Relay: 0x7d6C5b4A39281706f5E4d3c2B1a09876543210</span></li>
+          <li><span class="maniv-addr">Oracle: 0x6c5B4a39281706f5e4D3c2b1A09876543210fe</span></li>
+          <li><span class="maniv-addr">Sentinel: 0x5b4A39281706f5e4d3C2b1a09876543210fedc</span></li>
+          <li><span class="maniv-addr">ARIVA_DOMAIN_SALT: 0xe9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0</span></li>
+          <li><span class="maniv-addr">ARIVA_SESSION_SALT: 0xd8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9</span></li>
+          <li><span class="maniv-addr">ARIVA_COMPLETION_SEED: 0xc7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8</span></li>
+        </ul>
+        <p style="font-size: 0.8rem; color: var(--maniv-dim); margin-top: 0.75rem;">MAX_SUGGESTIONS_PER_REQUEST: 24 · MAX_COMPLETIONS_PER_LINE: 12 · MAX_SESSION_DURATION_SEC: 7200 · MAX_SESSIONS_PER_USER: 16 · CODE_CONTEXT_WINDOW: 2048</p>
+        <div class="maniv-h3">Address uniqueness</div>
+        <p class="maniv-p">The five addresses (Coordinator, Vault, Relay, Oracle, Sentinel) and three hex salts (ARIVA_DOMAIN_SALT, ARIVA_SESSION_SALT, ARIVA_COMPLETION_SEED) are defined only in AriVa (contracts/AriVa.py) and in this ManivA UI. They are not reused from Spella, FrostVow, Robotank, BacklineLedger, RigCue, HermesAI, EwAI, ThornGate, FlintLock, or any other contract or code generation. confirm_ariva_addresses_unique() and confirm_ariva_hex_unique() in AriVa.py verify uniqueness.</p>
+        <div class="maniv-h3">Constants table</div>
+        <table class="maniv-table">
+          <tr><th>Constant</th><th>Value</th></tr>
+          <tr><td>MIN_QUERY_LEN</td><td>1</td></tr>
+          <tr><td>MAX_QUERY_LEN</td><td>8192</td></tr>
+          <tr><td>SUGGESTION_CACHE_TTL</td><td>300</td></tr>
+          <tr><td>VALIDATION_RULESET_VERSION</td><td>3</td></tr>
+          <tr><td>ASSISTANT_RESPONSE_MAX_LEN</td><td>4096</td></tr>
+        </table>
+        <div class="maniv-h3">Copy-paste constants (for Ama or backend)</div>
+        <pre class="maniv-output" style="max-height: 240px; font-size: 0.7rem;">ARIVA_COORDINATOR = "0x9f8E7d6C5b4A39281706f5e4d3c2B1a098765432"
+ARIVA_VAULT = "0x8e7D6c5B4a39281706F5e4d3C2b1A0987654321"
+ARIVA_RELAY = "0x7d6C5b4A39281706f5E4d3c2B1a09876543210"
+ARIVA_ORACLE = "0x6c5B4a39281706f5e4D3c2b1A09876543210fe"
+ARIVA_SENTINEL = "0x5b4A39281706f5e4d3C2b1a09876543210fedc"
+ARIVA_DOMAIN_SALT = "0xe9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0"
+ARIVA_SESSION_SALT = "0xd8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9"
+ARIVA_COMPLETION_SEED = "0xc7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8"
+MAX_SUGGESTIONS_PER_REQUEST = 24
+MAX_COMPLETIONS_PER_LINE = 12
+MAX_SESSION_DURATION_SEC = 7200
+MAX_SESSIONS_PER_USER = 16
+CODE_CONTEXT_WINDOW = 2048</pre>
+      </div>
+      <div class="maniv-card">
+        <h2>How to use</h2>
+        <p class="maniv-p">ManivA is the web UI for the AriVa code assistant engine. AriVa is implemented in <span class="maniv-code-inline">contracts/AriVa.py</span> as a single Python module. All configuration (coordinator, vault, relay, oracle, sentinel addresses and domain/session/completion salts) is pre-populated; no deployment config is required.</p>
+        <p class="maniv-p">Create a session with <span class="maniv-code-inline">create_session(user_ref, caller)</span> where caller must be the coordinator address. Then use <span class="maniv-code-inline">get_completions</span> and <span class="maniv-code-inline">get_suggestions</span> with the session_id. Use <span class="maniv-code-inline">validate_code</span> to run validation rules (trailing whitespace, line length, balanced braces, no tabs, indent, non-empty file, max blank lines).</p>
+        <p class="maniv-p">The Ama app (<a href="../Ama/" style="color: var(--maniv-accent);">Ama</a>) is the Python CLI/desktop companion. Addresses and hex in AriVa are unique and not reused from Spella, FrostVow, Robotank, BacklineLedger, or any other contract.</p>
+        <div class="maniv-h3">Supported languages</div>
+        <p class="maniv-p">py, js, ts, sol, rs, go, java, cpp. Use <span class="maniv-code-inline">language</span> in get_completions.</p>
+        <div class="maniv-h3">Error response format</div>
+        <p class="maniv-p">When an exception is raised, handle_ariva_request returns e.g. <span class="maniv-code-inline">{ "error": "AriVaSessionNotFound", "message": "Session id does not exist." }</span>. Possible error keys: AriVaNotCoordinator, AriVaSessionNotFound, AriVaSessionLimitReached, AriVaQueryTooShort, AriVaQueryTooLong, AriVaSuggestionLimitReached, AriVaZeroDisallowed, AriVaContextOverflow, Unknown method, Internal.</p>
+      </div>
+    </div>
+
+    <div id="maniv-panel-api" class="maniv-panel">
+      <div class="maniv-card">
+        <h2>API methods (handle_ariva_request)</h2>
+        <p style="font-size: 0.85rem; color: var(--maniv-dim); margin-bottom: 0.75rem;">Call handle_ariva_request(platform, method, params). Coordinator: 0x9f8E7d6C5b4A39281706f5e4d3c2B1a098765432</p>
+        <ul class="maniv-list">
+          <li>config — no params</li>
+          <li>create_session — user_ref, caller</li>
+          <li>get_session — session_id</li>
+          <li>close_session — session_id, caller</li>
+          <li>update_context — session_id, context, caller</li>
+          <li>validate_code — code</li>
+          <li>get_completions — session_id, prefix, line_context, language, max_n</li>
+          <li>get_suggestions — session_id, query, kind, max_n</li>
+          <li>stats — no params</li>
+          <li>cleanup_stale — no params</li>
+        </ul>
+      </div>
+      <div class="maniv-card">
+        <h2>Request templates</h2>
+        <div class="maniv-output" style="max-height: 280px;" id="maniv-templates-output"></div>
+      </div>
+      <div class="maniv-card">
+        <h2>Example integration (Python)</h2>
+        <pre class="maniv-output" style="max-height: 360px; font-size: 0.75rem;">from contracts.AriVa import create_ariva, handle_ariva_request, ARIVA_COORDINATOR
+
+platform = create_ariva()
+coord = ARIVA_COORDINATOR
+
+# Create session
+r = handle_ariva_request(platform, "create_session", {"user_ref": "my_user", "caller": coord})
+session_id = r["session_id"]
