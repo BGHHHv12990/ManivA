@@ -97,3 +97,102 @@
     .maniv-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .maniv-output {
       font-family: var(--maniv-mono);
+      font-size: 0.8rem;
+      background: var(--maniv-surface);
+      border: 1px solid var(--maniv-edge);
+      border-radius: 6px;
+      padding: 0.75rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 320px;
+      overflow-y: auto;
+      margin-top: 0.5rem;
+    }
+    .maniv-output.success { border-color: var(--maniv-success); }
+    .maniv-output.error { border-color: var(--maniv-error); }
+    .maniv-label { font-size: 0.8rem; color: var(--maniv-dim); margin-bottom: 0.35rem; display: block; }
+    .maniv-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--maniv-edge);
+      padding-bottom: 0.5rem;
+    }
+    .maniv-tab {
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.4rem 0.8rem;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--maniv-dim);
+      cursor: pointer;
+      transition: color 0.2s, background 0.2s;
+    }
+    .maniv-tab:hover { color: var(--maniv-text); }
+    .maniv-tab.active { color: var(--maniv-accent); background: rgba(99, 102, 241, 0.1); }
+    .maniv-panel { display: none; }
+    .maniv-panel.active { display: block; }
+    .maniv-list { list-style: none; font-size: 0.85rem; }
+    .maniv-list li { padding: 0.35rem 0; border-bottom: 1px solid var(--maniv-edge); }
+    .maniv-list li:last-child { border-bottom: none; }
+    .maniv-addr { font-family: var(--maniv-mono); font-size: 0.75rem; color: var(--maniv-dim); word-break: break-all; }
+    .maniv-footer { text-align: center; font-size: 0.75rem; color: var(--maniv-dim); margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--maniv-edge); }
+    .maniv-footer a { color: var(--maniv-accent); text-decoration: none; }
+    .maniv-footer a:hover { text-decoration: underline; }
+    textarea.maniv-input { min-height: 120px; resize: vertical; }
+    .maniv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    @media (max-width: 640px) { .maniv-grid { grid-template-columns: 1fr; } }
+    .maniv-code-inline { font-family: var(--maniv-mono); font-size: 0.8rem; background: var(--maniv-surface); padding: 0.15rem 0.4rem; border-radius: 4px; color: var(--maniv-accent); }
+    .maniv-h3 { font-size: 0.95rem; font-weight: 600; color: var(--maniv-text); margin: 1rem 0 0.5rem; }
+    .maniv-p { font-size: 0.85rem; color: var(--maniv-dim); line-height: 1.5; margin-bottom: 0.5rem; }
+    .maniv-table { width: 100%; font-size: 0.8rem; border-collapse: collapse; }
+    .maniv-table th, .maniv-table td { padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--maniv-edge); text-align: left; }
+    .maniv-table th { color: var(--maniv-dim); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="maniv-wrap">
+    <header class="maniv-header">
+      <div>
+        <div class="maniv-logo">ManivA</div>
+        <div class="maniv-tagline">AriVa code assistant · Sessions, completions, validation</div>
+      </div>
+    </header>
+
+    <div class="maniv-tabs">
+      <button type="button" class="maniv-tab active" data-panel="assist">Assist</button>
+      <button type="button" class="maniv-tab" data-panel="validate">Validate</button>
+      <button type="button" class="maniv-tab" data-panel="config">Config</button>
+      <button type="button" class="maniv-tab" data-panel="api">API</button>
+      <button type="button" class="maniv-tab" data-panel="rules">Rules</button>
+      <button type="button" class="maniv-tab" data-panel="ref">Reference</button>
+    </div>
+
+    <div id="maniv-panel-assist" class="maniv-panel active">
+      <div class="maniv-card">
+        <h2>Session</h2>
+        <label class="maniv-label">User ref</label>
+        <input type="text" class="maniv-input" id="maniv-user-ref" value="maniv_user_1" placeholder="user ref" />
+        <button type="button" class="maniv-btn" id="maniv-create-session">Create session</button>
+        <div class="maniv-output" id="maniv-session-output"></div>
+      </div>
+      <div class="maniv-card">
+        <h2>Completions</h2>
+        <label class="maniv-label">Session ID (from above)</label>
+        <input type="text" class="maniv-input" id="maniv-completion-session" placeholder="session_id" />
+        <label class="maniv-label">Prefix / line context</label>
+        <input type="text" class="maniv-input" id="maniv-prefix" value="im" placeholder="prefix" />
+        <label class="maniv-label">Language</label>
+        <input type="text" class="maniv-input" id="maniv-lang" value="py" placeholder="py" />
+        <button type="button" class="maniv-btn" id="maniv-get-completions">Get completions</button>
+        <div class="maniv-output" id="maniv-completions-output"></div>
+      </div>
+      <div class="maniv-card">
+        <h2>Suggestions</h2>
+        <label class="maniv-label">Session ID</label>
+        <input type="text" class="maniv-input" id="maniv-suggest-session" placeholder="session_id" />
+        <label class="maniv-label">Query</label>
+        <input type="text" class="maniv-input" id="maniv-query" value="suggest a fix" placeholder="query" />
+        <button type="button" class="maniv-btn" id="maniv-get-suggestions">Get suggestions</button>
+        <div class="maniv-output" id="maniv-suggestions-output"></div>
