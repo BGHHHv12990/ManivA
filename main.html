@@ -295,3 +295,102 @@ coord = ARIVA_COORDINATOR
 # Create session
 r = handle_ariva_request(platform, "create_session", {"user_ref": "my_user", "caller": coord})
 session_id = r["session_id"]
+
+# Validate code
+r = handle_ariva_request(platform, "validate_code", {"code": "def foo():\\n  pass  "})
+print(r["results"])
+
+# Get completions
+r = handle_ariva_request(platform, "get_completions", {
+    "session_id": session_id, "prefix": "im", "line_context": "import ",
+    "language": "py", "max_n": 5
+})
+print(r["completions"])
+
+# Get suggestions
+r = handle_ariva_request(platform, "get_suggestions", {
+    "session_id": session_id, "query": "fix typo", "kind": 1, "max_n": 10
+})
+print(r["suggestions"])
+
+# Stats
+r = handle_ariva_request(platform, "stats", {})
+print(r)</pre>
+      </div>
+      <div class="maniv-card">
+        <h2>Full demo script (run_ariva_demo)</h2>
+        <pre class="maniv-output" style="max-height: 400px; font-size: 0.72rem;"># In Python:
+# from contracts.AriVa import create_ariva, run_ariva_demo, health_check_ariva
+
+# platform = create_ariva()
+# result = run_ariva_demo(platform)
+# print(result)  # session_id, validate, completions_count, suggestions_count
+
+# health = health_check_ariva(platform)
+# print(health)  # ok, addresses_unique, hex_unique, stats
+
+# run_ariva_simulation(platform, num_sessions=8, queries_per_session=5)
+# run_ariva_simulation_v2(platform, num_users=12, sessions_per_user=2, validate_samples=20)
+
+# confirm_ariva_addresses_unique()  # True
+# confirm_ariva_hex_unique()       # True
+# get_all_ariva_constants()       # dict of all constants
+# list_ariva_methods()             # list of method names for handle_ariva_request</pre>
+      </div>
+      <div class="maniv-card">
+        <h2>Example responses</h2>
+        <p class="maniv-p">create_session: { "session_id": "&lt;32-char hex&gt;", "user_ref": "user_1" }</p>
+        <p class="maniv-p">validate_code: { "results": [ { "passed": false, "rule_id": "ARIVA_NO_TRAILING_WS", "message": "Trailing whitespace", "line": 2, "column": 7 } ], "passed": false }</p>
+        <p class="maniv-p">get_completions: { "completions": [ { "text": "token_...", "kind": 0, "confidence": 0.75 } ] }</p>
+        <p class="maniv-p">get_suggestions: { "suggestions": [ { "suggestion_id": "...", "kind": 1, "text": "suggestion_0", "confidence": 0.8 } ] }</p>
+        <p class="maniv-p">stats: { "request_count": 0, "total_suggestions_served": 0, "active_sessions": 0 }</p>
+        <p class="maniv-p">Errors: { "error": "AriVaSessionNotFound", "message": "..." } etc.</p>
+      </div>
+      <div class="maniv-card">
+        <h2>AriVa module functions (AriVa.py)</h2>
+        <p class="maniv-p">create_ariva, create_ariva_with_events, handle_ariva_request, list_ariva_methods, get_all_ariva_constants, health_check_ariva, readiness_ariva, run_ariva_demo, run_ariva_simulation, run_ariva_simulation_v2, batch_handle_ariva, confirm_ariva_addresses_unique, confirm_ariva_hex_unique, get_request_templates, get_display_constants, get_rule_ids, get_rule_id_list, get_validation_rule_descriptions, get_suggestion_kind_descriptions, get_session_status_descriptions, format_validation_results_for_display, format_validation_for_cli, format_config_for_display, get_coordinator_address, get_vault_address, get_relay_address, get_oracle_address, get_sentinel_address, get_domain_salt, get_session_salt, get_completion_seed, get_max_suggestions_per_request, get_max_completions_per_line, get_max_session_duration_sec, get_max_sessions_per_user, get_min_query_len, get_max_query_len, get_code_context_window, all_ariva_addresses, all_ariva_salts, confirm_all_addresses_valid, confirm_all_salts_valid, metadata_ariva, ariva_version_info, supported_languages_list, is_valid_language, default_max_completions, default_max_suggestions. Platform methods: api_create_session, api_get_session, api_close_session, api_update_context, api_validate_code, api_get_completions, api_get_suggestions, api_config, api_stats.</p>
+      </div>
+      <div class="maniv-card">
+        <h2>Method param keys</h2>
+        <table class="maniv-table">
+          <tr><th>Method</th><th>Param keys</th></tr>
+          <tr><td>create_session</td><td>user_ref, caller</td></tr>
+          <tr><td>get_session</td><td>session_id</td></tr>
+          <tr><td>close_session</td><td>session_id, caller</td></tr>
+          <tr><td>update_context</td><td>session_id, context, caller</td></tr>
+          <tr><td>validate_code</td><td>code</td></tr>
+          <tr><td>get_completions</td><td>session_id, prefix, line_context, language, max_n</td></tr>
+          <tr><td>get_suggestions</td><td>session_id, query, kind, max_n</td></tr>
+          <tr><td>stats</td><td>(none)</td></tr>
+          <tr><td>cleanup_stale</td><td>(none)</td></tr>
+          <tr><td>config</td><td>(none)</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div id="maniv-panel-rules" class="maniv-panel">
+      <div class="maniv-card">
+        <h2>Validation rules (AriVa)</h2>
+        <ul class="maniv-list">
+          <li>ARIVA_NO_TRAILING_WS — Remove trailing whitespace from line</li>
+          <li>ARIVA_MAX_LINE_LEN — Line exceeds 120 characters</li>
+          <li>ARIVA_BALANCED_BRACES — Unbalanced or unclosed bracket</li>
+          <li>ARIVA_NO_TABS — Use spaces instead of tabs</li>
+          <li>ARIVA_INDENT — Indent must be multiple of 4 spaces</li>
+          <li>ARIVA_NON_EMPTY — File must not be empty</li>
+          <li>ARIVA_MAX_BLANK — Too many consecutive blank lines</li>
+        </ul>
+        <div class="maniv-h3">Rule details</div>
+        <p class="maniv-p">ARIVA_NO_TRAILING_WS: checks each line for spaces/tabs after the last non-whitespace character. ARIVA_MAX_LINE_LEN: default 120 chars per line. ARIVA_BALANCED_BRACES: checks (), [], {} are balanced. ARIVA_NO_TABS: disallows tab characters. ARIVA_INDENT: expects indentation in multiples of 4 spaces. ARIVA_NON_EMPTY: file content must have at least one non-whitespace character. ARIVA_MAX_BLANK: at most 2 consecutive blank lines by default.</p>
+      </div>
+      <div class="maniv-card">
+        <h2>Suggestion kinds</h2>
+        <ul class="maniv-list">
+          <li>0: Completion</li>
+          <li>1: Fix</li>
+          <li>2: Hint</li>
+          <li>3: Refactor</li>
+        </ul>
+      </div>
+      <div class="maniv-card">
+        <h2>Session status</h2>
