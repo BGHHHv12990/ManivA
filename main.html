@@ -592,3 +592,97 @@ SessionStatus: ACTIVE=0, IDLE=1, CLOSED=2</pre>
       function buildGetSuggestionsPayload(sessionId, query, kind, maxN) {
         return { method: "get_suggestions", params: { session_id: sessionId, query: query || "", kind: kind || 0, max_n: maxN || 24 } };
       }
+      function buildUpdateContextPayload(sessionId, context) {
+        return { method: "update_context", params: { session_id: sessionId, context: context || "", caller: COORDINATOR } };
+      }
+      function buildCloseSessionPayload(sessionId) {
+        return { method: "close_session", params: { session_id: sessionId, caller: COORDINATOR } };
+      }
+      function buildStatsPayload() { return { method: "stats", params: {} }; }
+      function buildConfigPayload() { return { method: "config", params: {} }; }
+      function buildCleanupPayload() { return { method: "cleanup_stale", params: {} }; }
+
+      var DEMO_RESPONSE_CREATE_SESSION = { session_id: "a1b2c3d4e5f67890", user_ref: "maniv_user_1" };
+      var DEMO_RESPONSE_VALIDATE = { results: [{ passed: false, rule_id: "ARIVA_NO_TRAILING_WS", message: "Trailing whitespace", line: 2, column: 7 }], passed: false };
+      var DEMO_RESPONSE_COMPLETIONS = { completions: [{ text: "token_py_abc123", kind: 0, confidence: 0.75 }, { text: "token_py_def456", kind: 0, confidence: 0.7 }] };
+      var DEMO_RESPONSE_SUGGESTIONS = { suggestions: [{ suggestion_id: "s1", kind: 1, text: "suggestion_0", confidence: 0.8 }, { suggestion_id: "s2", kind: 1, text: "suggestion_1", confidence: 0.7 }] };
+      var DEMO_RESPONSE_STATS = { request_count: 42, total_suggestions_served: 120, active_sessions: 3 };
+      var DEMO_RESPONSE_CONFIG = { coordinator: COORDINATOR, vault: "0x8e7D6c5B4a39281706F5e4d3C2b1A0987654321", relay: "0x7d6C5b4A39281706f5E4d3c2B1a09876543210", oracle: "0x6c5B4a39281706f5e4D3c2b1A09876543210fe", sentinel: "0x5b4A39281706f5e4d3C2b1a09876543210fedc", domain_salt: "0xe9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0", session_salt: "0xd8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9", completion_seed: "0xc7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8" };
+
+      var VALIDATION_RULE_DESCRIPTIONS = {
+        ARIVA_NO_TRAILING_WS: "Remove trailing whitespace from line",
+        ARIVA_MAX_LINE_LEN: "Line exceeds maximum allowed length (120)",
+        ARIVA_BALANCED_BRACES: "Unbalanced or unclosed bracket",
+        ARIVA_NO_TABS: "Use spaces instead of tabs",
+        ARIVA_INDENT: "Indent must be multiple of 4 spaces",
+        ARIVA_NON_EMPTY: "File must not be empty",
+        ARIVA_MAX_BLANK: "Too many consecutive blank lines"
+      };
+      function getRuleDescription(ruleId) { return VALIDATION_RULE_DESCRIPTIONS[ruleId] || "Unknown rule"; }
+      function getAllRuleIds() { return Object.keys(VALIDATION_RULE_DESCRIPTIONS); }
+
+      var EXAMPLE_VALIDATION_RESULTS = [
+        { passed: false, rule_id: "ARIVA_NO_TRAILING_WS", message: "Trailing whitespace", line: 2, column: 7 },
+        { passed: false, rule_id: "ARIVA_MAX_LINE_LEN", message: "Line exceeds 120 characters", line: 5, column: 121 },
+        { passed: false, rule_id: "ARIVA_BALANCED_BRACES", message: "Unclosed bracket", line: 10, column: 1 },
+        { passed: false, rule_id: "ARIVA_NO_TABS", message: "Use spaces instead of tabs", line: 3, column: 1 },
+        { passed: false, rule_id: "ARIVA_INDENT", message: "Indent must be multiple of 4", line: 4, column: 1 },
+        { passed: false, rule_id: "ARIVA_NON_EMPTY", message: "File must not be empty", line: 1, column: 1 },
+        { passed: false, rule_id: "ARIVA_MAX_BLANK", message: "More than 2 consecutive blank lines", line: 8, column: 1 },
+      ];
+      function formatValidationForDisplay(results) {
+        return results.map(function (r) {
+          return r.rule_id + ": " + r.message + " (line " + r.line + ", col " + r.column + ")";
+        }).join("\n");
+      }
+      function buildMockCreateSessionResponse(sessionId, userRef) {
+        return { session_id: sessionId || "demo_sess_001", user_ref: userRef || "user_1" };
+      }
+      function buildMockValidateResponse(results) {
+        return { results: results || [], passed: !(results && results.length); };
+      }
+      function buildMockCompletionsResponse(completions) {
+        return { completions: completions || [] };
+      }
+      function buildMockSuggestionsResponse(suggestions) {
+        return { suggestions: suggestions || [] };
+      }
+      function buildMockStatsResponse(requestCount, totalSuggestions, activeSessions) {
+        return { request_count: requestCount || 0, total_suggestions_served: totalSuggestions || 0, active_sessions: activeSessions || 0 };
+      }
+      function buildMockErrorResponse(errorKey, message) {
+        return { error: errorKey || "Internal", message: message || "" };
+      }
+      var METHOD_DESCRIPTIONS = {
+        config: "Return coordinator, vault, relay, oracle, sentinel, domain_salt, session_salt, completion_seed",
+        create_session: "Create a new assistant session for user_ref; caller must be coordinator",
+        get_session: "Get session by session_id",
+        close_session: "Close session; caller must be coordinator",
+        update_context: "Update session context buffer; caller must be coordinator",
+        validate_code: "Run validation rules on code string",
+        get_completions: "Get completion suggestions for prefix/line_context in language",
+        get_suggestions: "Get suggestions for query with kind (0=Completion, 1=Fix, 2=Hint, 3=Refactor)",
+        stats: "Return request_count, total_suggestions_served, active_sessions",
+        cleanup_stale: "Remove sessions inactive longer than MAX_SESSION_DURATION_SEC",
+      };
+      function getMethodDescription(method) { return METHOD_DESCRIPTIONS[method] || ""; }
+      var SUGGESTION_KINDS = { 0: "Completion", 1: "Fix", 2: "Hint", 3: "Refactor" };
+      function getSuggestionKindName(k) { return SUGGESTION_KINDS[k] != null ? SUGGESTION_KINDS[k] : "Unknown"; }
+      function buildCompletionsPayload(sessionId, prefix, lang, maxN) {
+        return { method: "get_completions", params: { session_id: sessionId, prefix: prefix || "", line_context: prefix || "", language: lang || "py", max_n: maxN || 12 } };
+      }
+      function buildSuggestionsPayload(sessionId, query, kind, maxN) {
+        return { method: "get_suggestions", params: { session_id: sessionId, query: query || "", kind: kind != null ? kind : 0, max_n: maxN || 24 } };
+      }
+      function formatSessionStatus(active) { return active ? "active" : "closed"; }
+      function formatValidationSummary(valid, errorCount) {
+        if (valid) return "Valid (no errors)";
+        return "Invalid (" + (errorCount || 0) + " error(s))";
+      }
+      function copyToClipboardFallback(text) { var ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); }
+      var MANIVA_UI_VERSION = "1.0";
+      function isManivAReady() { return typeof buildCompletionsPayload === "function"; }
+    })();
+  </script>
+</body>
+</html>
