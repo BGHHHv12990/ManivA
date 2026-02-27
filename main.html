@@ -394,3 +394,102 @@ print(r)</pre>
       </div>
       <div class="maniv-card">
         <h2>Session status</h2>
+        <ul class="maniv-list">
+          <li>0: Active</li>
+          <li>1: Idle</li>
+          <li>2: Closed</li>
+        </ul>
+      </div>
+      <div class="maniv-card">
+        <h2>Exceptions (AriVa)</h2>
+        <ul class="maniv-list">
+          <li>AriVaNotCoordinator</li>
+          <li>AriVaSessionNotFound</li>
+          <li>AriVaSessionLimitReached</li>
+          <li>AriVaQueryTooShort / AriVaQueryTooLong</li>
+          <li>AriVaSuggestionLimitReached</li>
+          <li>AriVaZeroDisallowed</li>
+          <li>AriVaValidationFailed</li>
+          <li>AriVaContextOverflow</li>
+        </ul>
+      </div>
+      <div class="maniv-card">
+        <h2>Supported languages</h2>
+        <p class="maniv-p">py, js, ts, sol, rs, go, java, cpp. Pass <span class="maniv-code-inline">language</span> in get_completions params. Use normalize_language(lang) in AriVa for default "py".</p>
+      </div>
+      <div class="maniv-card">
+        <h2>Error response keys</h2>
+        <p class="maniv-p">When handle_ariva_request catches an exception it returns JSON with key "error" and optionally "message". Possible error values: AriVaNotCoordinator, AriVaSessionNotFound, AriVaSessionLimitReached, AriVaQueryTooShort, AriVaQueryTooLong, AriVaSuggestionLimitReached, AriVaZeroDisallowed, AriVaContextOverflow, Unknown method, Internal.</p>
+      </div>
+      <div class="maniv-card">
+        <h2>Example JSON request/response</h2>
+        <pre class="maniv-output" style="max-height: 200px; font-size: 0.7rem;">Request: { "method": "create_session", "params": { "user_ref": "alice", "caller": "0x9f8E7d6C5b4A39281706f5e4d3c2B1a098765432" } }
+Response: { "session_id": "a1b2c3d4e5f6789012345678abcdef01", "user_ref": "alice" }
+
+Request: { "method": "validate_code", "params": { "code": "def x():\\n  pass  " } }
+Response: { "results": [ { "passed": false, "rule_id": "ARIVA_NO_TRAILING_WS", "message": "Trailing whitespace", "line": 2, "column": 7 } ], "passed": false }</pre>
+      </div>
+      <div class="maniv-card">
+        <h2>ManivA + Ama</h2>
+        <p class="maniv-p">ManivA is the web UI for the AriVa code assistant. Ama is the Python app (CLI or desktop) that can call the same AriVa engine. Both use the same coordinator address and config. Addresses and hex are unique to AriVa and are not reused from any other contract (Spella, FrostVow, Robotank, BacklineLedger, RigCue, HermesAI, EwAI, ThornGate, FlintLock, etc.).</p>
+      </div>
+    </div>
+
+    <div id="maniv-panel-ref" class="maniv-panel">
+      <div class="maniv-card">
+        <h2>Reference: AriVa constants</h2>
+        <pre class="maniv-output" style="max-height: 320px; font-size: 0.72rem;">MAX_SUGGESTIONS_PER_REQUEST = 24
+MAX_COMPLETIONS_PER_LINE = 12
+MAX_SESSION_DURATION_SEC = 7200
+MAX_SESSIONS_PER_USER = 16
+MIN_QUERY_LEN = 1
+MAX_QUERY_LEN = 8192
+SUGGESTION_CACHE_TTL = 300
+VALIDATION_RULESET_VERSION = 3
+CODE_CONTEXT_WINDOW = 2048
+ASSISTANT_RESPONSE_MAX_LEN = 4096
+
+SuggestionKind: COMPLETION=0, FIX=1, HINT=2, REFACTOR=3
+SessionStatus: ACTIVE=0, IDLE=1, CLOSED=2</pre>
+      </div>
+      <div class="maniv-card">
+        <h2>Reference: All methods</h2>
+        <ul class="maniv-list">
+          <li>config</li>
+          <li>create_session (user_ref, caller)</li>
+          <li>get_session (session_id)</li>
+          <li>close_session (session_id, caller)</li>
+          <li>update_context (session_id, context, caller)</li>
+          <li>validate_code (code)</li>
+          <li>get_completions (session_id, prefix, line_context, language, max_n)</li>
+          <li>get_suggestions (session_id, query, kind, max_n)</li>
+          <li>stats</li>
+          <li>cleanup_stale</li>
+        </ul>
+      </div>
+      <div class="maniv-card">
+        <h2>Reference: Confirm uniqueness</h2>
+        <p class="maniv-p">In AriVa.py: confirm_ariva_addresses_unique() returns True if all five addresses are valid and distinct. confirm_ariva_hex_unique() returns True if all three salts are valid and distinct. These addresses and hex values are not reused from any previous contract or code generation.</p>
+      </div>
+    </div>
+
+    <div class="maniv-card">
+      <h2>Quick start</h2>
+      <ol style="font-size: 0.85rem; color: var(--maniv-dim); line-height: 1.7; padding-left: 1.25rem; margin: 0;">
+        <li>Import: from contracts.AriVa import create_ariva, handle_ariva_request, ARIVA_COORDINATOR</li>
+        <li>Create platform: platform = create_ariva()</li>
+        <li>Create session: r = handle_ariva_request(platform, "create_session", {"user_ref": "your_user", "caller": ARIVA_COORDINATOR})</li>
+        <li>Store session_id from r["session_id"]</li>
+        <li>Validate code: handle_ariva_request(platform, "validate_code", {"code": "your code string"})</li>
+        <li>Get completions: handle_ariva_request(platform, "get_completions", {"session_id": sid, "prefix": "im", "line_context": "import ", "language": "py", "max_n": 5})</li>
+        <li>Get suggestions: handle_ariva_request(platform, "get_suggestions", {"session_id": sid, "query": "fix", "kind": 1, "max_n": 10})</li>
+        <li>Update context: handle_ariva_request(platform, "update_context", {"session_id": sid, "context": "def foo(): pass", "caller": ARIVA_COORDINATOR})</li>
+        <li>Close session when done: handle_ariva_request(platform, "close_session", {"session_id": sid, "caller": ARIVA_COORDINATOR})</li>
+        <li>Check stats: handle_ariva_request(platform, "stats", {})</li>
+      </ol>
+    </div>
+
+    <p class="maniv-footer">
+      AriVa engine: <code>contracts/AriVa.py</code> · App: <a href="../Ama/">Ama</a> · Addresses/hex unique
+    </p>
+  </div>
