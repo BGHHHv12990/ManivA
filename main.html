@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ManivA — AriVa Code Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700&family=DM+Mono&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --maniv-bg: #0f1114;
+      --maniv-surface: #181b20;
+      --maniv-card: #1e2228;
+      --maniv-edge: #2c323a;
+      --maniv-text: #e6e9ec;
+      --maniv-dim: #8b929a;
+      --maniv-accent: #6366f1;
+      --maniv-success: #22c55e;
+      --maniv-warn: #f59e0b;
+      --maniv-error: #ef4444;
+      --maniv-radius: 8px;
+      --maniv-font: "DM Sans", sans-serif;
+      --maniv-mono: "DM Mono", monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--maniv-font);
+      background: var(--maniv-bg);
+      color: var(--maniv-text);
+      min-height: 100vh;
+      background-image: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(99, 102, 241, 0.08), transparent);
+    }
+    .maniv-wrap {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      min-height: 100vh;
+    }
+    header.maniv-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--maniv-edge);
+      margin-bottom: 1.25rem;
+    }
+    .maniv-logo {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--maniv-accent);
+    }
+    .maniv-tagline { font-size: 0.75rem; color: var(--maniv-dim); margin-top: 0.2rem; }
+    .maniv-card {
+      background: var(--maniv-card);
+      border: 1px solid var(--maniv-edge);
+      border-radius: var(--maniv-radius);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .maniv-card h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--maniv-accent);
+      margin-bottom: 0.75rem;
+    }
+    .maniv-input {
+      width: 100%;
+      font-family: var(--maniv-mono);
+      font-size: 0.85rem;
+      padding: 0.6rem 0.8rem;
+      background: var(--maniv-surface);
+      border: 1px solid var(--maniv-edge);
+      border-radius: 6px;
+      color: var(--maniv-text);
+      margin-bottom: 0.5rem;
+    }
+    .maniv-input:focus {
+      outline: none;
+      border-color: var(--maniv-accent);
+    }
+    .maniv-btn {
+      font-family: var(--maniv-font);
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--maniv-accent);
+      border-radius: 6px;
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--maniv-accent);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .maniv-btn:hover { background: rgba(99, 102, 241, 0.25); }
+    .maniv-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .maniv-output {
+      font-family: var(--maniv-mono);
