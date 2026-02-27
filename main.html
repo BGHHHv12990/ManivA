@@ -493,3 +493,102 @@ SessionStatus: ACTIVE=0, IDLE=1, CLOSED=2</pre>
       AriVa engine: <code>contracts/AriVa.py</code> · App: <a href="../Ama/">Ama</a> · Addresses/hex unique
     </p>
   </div>
+
+  <script>
+    (function () {
+      var COORDINATOR = "0x9f8E7d6C5b4A39281706f5e4d3c2B1a098765432";
+      var sessionId = "";
+
+      document.querySelectorAll(".maniv-tab").forEach(function (tab) {
+        tab.addEventListener("click", function () {
+          var panelId = "maniv-panel-" + tab.getAttribute("data-panel");
+          document.querySelectorAll(".maniv-tab").forEach(function (t) { t.classList.remove("active"); });
+          document.querySelectorAll(".maniv-panel").forEach(function (p) { p.classList.remove("active"); });
+          tab.classList.add("active");
+          var panel = document.getElementById(panelId);
+          if (panel) panel.classList.add("active");
+        });
+      });
+
+      function out(elId, text, isError) {
+        var el = document.getElementById(elId);
+        if (!el) return;
+        el.textContent = text;
+        el.className = "maniv-output" + (isError ? " error" : " success");
+      }
+
+      document.getElementById("maniv-create-session").addEventListener("click", function () {
+        var userRef = document.getElementById("maniv-user-ref").value.trim() || "maniv_user_1";
+        var payload = { method: "create_session", params: { user_ref: userRef, caller: COORDINATOR } };
+        out("maniv-session-output", "Request: " + JSON.stringify(payload, null, 2) + "\n\nResponse: (use Ama app or backend; session_id stored on create)");
+        sessionId = "demo_" + Math.random().toString(36).slice(2, 12);
+        document.getElementById("maniv-completion-session").value = sessionId;
+        document.getElementById("maniv-suggest-session").value = sessionId;
+        out("maniv-session-output", "Demo mode: session_id = " + sessionId + "\n\nIn production, call AriVa handle_ariva_request(platform, 'create_session', { user_ref: '" + userRef + "', caller: '" + COORDINATOR + "' })");
+      });
+
+      document.getElementById("maniv-get-completions").addEventListener("click", function () {
+        var sid = document.getElementById("maniv-completion-session").value.trim();
+        var prefix = document.getElementById("maniv-prefix").value;
+        var lang = document.getElementById("maniv-lang").value.trim() || "py";
+        out("maniv-completions-output", "get_completions(session_id='" + sid + "', prefix='" + prefix + "', language='" + lang + "')\n\nCall AriVa api_get_completions(platform, session_id, prefix, line_context, language) for results.");
+      });
+
+      document.getElementById("maniv-get-suggestions").addEventListener("click", function () {
+        var sid = document.getElementById("maniv-suggest-session").value.trim();
+        var query = document.getElementById("maniv-query").value;
+        out("maniv-suggestions-output", "get_suggestions(session_id='" + sid + "', query='" + query + "')\n\nCall AriVa api_get_suggestions(platform, session_id, query, kind, max_n) for results.");
+      });
+
+      document.getElementById("maniv-validate").addEventListener("click", function () {
+        var code = document.getElementById("maniv-code").value;
+        out("maniv-validate-output", "validate_code(code=\n" + JSON.stringify(code) + ")\n\nAriVa rules: ARIVA_NO_TRAILING_WS, ARIVA_MAX_LINE_LEN, ARIVA_BALANCED_BRACES, ARIVA_NO_TABS, ARIVA_INDENT, ARIVA_NON_EMPTY, ARIVA_MAX_BLANK.\nCall api_validate_code(platform, code) for results.");
+      });
+
+      var REQUEST_TEMPLATES = {
+        create_session: { user_ref: "user_1", caller: COORDINATOR },
+        get_session: { session_id: "<session_id>" },
+        close_session: { session_id: "<session_id>", caller: COORDINATOR },
+        update_context: { session_id: "<session_id>", context: "def foo(): pass", caller: COORDINATOR },
+        validate_code: { code: "def bar():\n  pass" },
+        get_completions: { session_id: "<session_id>", prefix: "im", line_context: "import ", language: "py", max_n: 5 },
+        get_suggestions: { session_id: "<session_id>", query: "suggest fix", kind: 1, max_n: 10 },
+        stats: {},
+        cleanup_stale: {},
+        config: {},
+      };
+
+      function renderTemplates() {
+        var el = document.getElementById("maniv-templates-output");
+        if (!el) return;
+        el.textContent = JSON.stringify(REQUEST_TEMPLATES, null, 2);
+      }
+      document.querySelectorAll(".maniv-tab").forEach(function (t) {
+        t.addEventListener("click", function () {
+          if (t.getAttribute("data-panel") === "api") renderTemplates();
+        });
+      });
+      renderTemplates();
+
+      var SUPPORTED_LANGUAGES = ["py", "js", "ts", "sol", "rs", "go", "java", "cpp"];
+      var SUGGESTION_KINDS = [{ id: 0, name: "Completion" }, { id: 1, name: "Fix" }, { id: 2, name: "Hint" }, { id: 3, name: "Refactor" }];
+      var SESSION_STATUSES = [{ id: 0, name: "Active" }, { id: 1, name: "Idle" }, { id: 2, name: "Closed" }];
+
+      function formatAddressShort(addr, head, tail) {
+        head = head || 6; tail = tail || 4;
+        if (!addr || addr.length < head + tail) return addr || "";
+        return addr.slice(0, head) + "..." + addr.slice(-tail);
+      }
+      function getCoordinatorShort() { return formatAddressShort(COORDINATOR); }
+      function buildCreateSessionPayload(userRef) {
+        return { method: "create_session", params: { user_ref: userRef || "user_1", caller: COORDINATOR } };
+      }
+      function buildValidatePayload(code) {
+        return { method: "validate_code", params: { code: code || "" } };
+      }
+      function buildGetCompletionsPayload(sessionId, prefix, language, maxN) {
+        return { method: "get_completions", params: { session_id: sessionId, prefix: prefix || "", line_context: prefix || "", language: language || "py", max_n: maxN || 12 } };
+      }
+      function buildGetSuggestionsPayload(sessionId, query, kind, maxN) {
+        return { method: "get_suggestions", params: { session_id: sessionId, query: query || "", kind: kind || 0, max_n: maxN || 24 } };
+      }
